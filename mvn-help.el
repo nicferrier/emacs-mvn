@@ -26,19 +26,6 @@
 
 ;;; Code:
 
-(defun mvn-dir-find ()
-  "Find the directory in which the `pom.xml' exists.
-
-Do not go above user-home."
-  (let ((pom-regex "^pom.xml$")
-        (dir default-directory)
-        (i 0))
-    (while (and (< i 10)
-                (not (directory-files dir t pom-regex)))
-      (setq i (+ 1 i))
-      (setq dir (expand-file-name
-                 (concat (file-name-as-directory dir) "..")))) dir))
-
 ;;;###autoload
 (defun mvn-buffer-init ()
   "Initialize a buffer.
@@ -46,14 +33,15 @@ Do not go above user-home."
 Use this as a hook function in java-mode."
   (make-variable-buffer-local 'compile-command)
   (setq compile-command
-        (format "cd %s ; mvn test" (mvn-dir-find))))
+        (format
+         "cd %s ; mvn test"
+         (locate-dominating-file (buffer-file-name) "pom.xml"))))
 
 ;;;###autoload
 (defun mvn-init ()
   "Initialize this package."
   (interactive)
   (add-hook 'java-mode-hook 'mvn-buffer-init))
-
 
 (provide 'mvn-help)
 
